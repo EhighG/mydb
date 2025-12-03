@@ -1,0 +1,12 @@
+{
+  "name": "mydb",
+  "version-string": "0.1.0",
+  "dependencies": [
+    "fmt",
+    "spdlog",
+    "gtest",
+    "abseil",
+    "boost-asio",
+    "boost-system"
+  ]
+}
