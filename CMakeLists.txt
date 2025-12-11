@@ -32,6 +32,12 @@ add_executable(mydb
         include/mydb/storage/Page.hpp
         include/mydb/storage/DiskManager.hpp
         src/storage/DiskManager.cpp
+        include/mydb/buffer/LRUReplacer.hpp
+        src/buffer/LRUReplacer.cpp
+        include/mydb/buffer/BufferPoolManager.hpp
+        src/buffer/BufferPoolManager.cpp
+        include/mydb/storage/Tuple.hpp
+        include/mydb/storage/TablePage.hpp
 )
 
 # 라이브러리 연결 (Link)
@@ -41,3 +47,30 @@ target_link_libraries(mydb PRIVATE
     absl::strings
     Boost::system
 )
+
+# # 테스트 설정 추가
+
+enable_testing()
+find_package(GTest CONFIG REQUIRED)
+
+# 테스트용 실행파일 생성
+add_executable(mydb_test
+    src/storage/DiskManager.cpp
+    src/buffer/LRUReplacer.cpp
+    src/buffer/BufferPoolManager.cpp
+    tests/buffer_test.cpp
+)
+
+# GTest 라이브러리 연결
+target_link_libraries(mydb_test PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+    GTest::gmock
+    fmt::fmt
+    spdlog::spdlog
+    absl::strings
+    Boost::system
+)
+
+# 'ctest' 명령어로 발견되도록 등록
+add_test(NAME BufferPoolTest COMMAND mydb_test)

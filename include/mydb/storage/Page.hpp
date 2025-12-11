@@ -61,5 +61,7 @@ namespace mydb {
 
         // BufferPoolManager가 이 private 멤버들을 관리할 수 있게 허용
         friend class BufferPoolManager;
+        // [추가] SlottedPage 구현 시
+        friend class TablePage;
     };
 }

@@ -5,20 +5,27 @@
 
 namespace mydb {
 
-    //생성자 구현
+    // 생성자 구현
     DiskManager::DiskManager(const std::string& db_file) : file_name_(db_file) {
-        // 1. 파일 열기 시도
+        bool exists = std::filesystem::exists(file_name_);
+
+        if (!exists) {
+            // 파일이 없으면: 출력 전용(ofstream)으로 열어서 "생성"만 하고 바로 닫음
+            std::ofstream out(file_name_, std::ios::binary);
+            if (!out.is_open()) {
+                throw std::runtime_error("Failed to create new file: " + file_name_ +
+                                       " | Error: " + std::strerror(errno));
+            }
+
+            out.close();
+            spdlog::info("Created new database file: {}", file_name_);
+        }
+
         db_io_.open(file_name_, std::ios::binary | std::ios::in | std::ios::out);
 
-        // 2. 파일이 없으면 새로 생성
         if (!db_io_.is_open()) {
-            db_io_.clear(); // 에러 플래그 초기화 (?)
-            // trunc: 파일이 있으면 truncate하고 새로 생성
-            db_io_.open(file_name_, std::ios::binary | std::ios::in | std::ios::out);
-
-            if (!db_io_.is_open()) {
-                throw std::runtime_error("Failed to open or create file: " + file_name_);
-            }
+            throw std::runtime_error("Failed to open file: " + file_name_ +
+                                   " | Error: " + std::strerror(errno));
         }
     }
 
@@ -77,7 +84,7 @@ namespace mydb {
         db_io_.read(page.get_data(), PAGE_SIZE);
 
         // 읽은 바이트 수 확인
-        if (db_io_.bad()) {
+        if (db_io_.bad() || db_io_.fail()) {
             spdlog::error("I/O error while reading page {}", page_id);
         }
     }
@@ -93,10 +100,14 @@ namespace mydb {
         // 현재 몇 번째 페이지까지 있는지 계산
         PageId next_page_id = file_size / PAGE_SIZE;
 
-        // 파일 크기를 16KB만큼 늘리기 위해 0으로 채운 데이터 사용
-        // 임시 버퍼(모두 0)
-        char buf[PAGE_SIZE] = {0};
-        db_io_.write(buf, PAGE_SIZE);
+        // 모던 C++ 방식 : vector, array 사용(스택 오버플로우 방지)
+        std::vector<char> buf(PAGE_SIZE, 0);
+
+        db_io_.write(buf.data(), PAGE_SIZE);
+        // // 파일 크기를 16KB만큼 늘리기 위해 0으로 채운 데이터 사용
+        // // 임시 버퍼(모두 0)
+        // char buf[PAGE_SIZE] = {0};
+        // db_io_.write(buf, PAGE_SIZE);
         db_io_.flush();
 
         return next_page_id;
