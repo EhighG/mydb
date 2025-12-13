@@ -26,19 +26,11 @@ find_package(Boost REQUIRED COMPONENTS system)
 # 헤더 경로 포함
 include_directories(include)
 
+
 # 실행 파일 생성
-add_executable(mydb
-        src/main.cpp
-        include/mydb/storage/Page.hpp
-        include/mydb/storage/DiskManager.hpp
-        src/storage/DiskManager.cpp
-        include/mydb/buffer/LRUReplacer.hpp
-        src/buffer/LRUReplacer.cpp
-        include/mydb/buffer/BufferPoolManager.hpp
-        src/buffer/BufferPoolManager.cpp
-        include/mydb/storage/Tuple.hpp
-        include/mydb/storage/TablePage.hpp
-)
+
+# 메인 실행 파일
+add_executable(mydb src/main.cpp)
 
 # 라이브러리 연결 (Link)
 target_link_libraries(mydb PRIVATE
@@ -55,10 +47,17 @@ find_package(GTest CONFIG REQUIRED)
 
 # 테스트용 실행파일 생성
 add_executable(mydb_test
+    # [Storage]
     src/storage/DiskManager.cpp
+    src/storage/TablePage.cpp
+
+    # [Buffer]
     src/buffer/LRUReplacer.cpp
     src/buffer/BufferPoolManager.cpp
+
+    # [Tests]
     tests/buffer_test.cpp
+    tests/table_page_test.cpp
 )
 
 # GTest 라이브러리 연결
