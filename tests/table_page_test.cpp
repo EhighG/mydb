@@ -49,4 +49,47 @@ namespace mydb {
         data_ptr = page.get_data() + slots[1].offset_;
         EXPECT_EQ(std::memcmp(data_ptr, raw_data2, sizeof(raw_data2)), 0);
     }
+
+    TEST(TablePageTest, DeleteAndGetTupleTest) {
+        TablePage page;
+        page.Init(100);
+
+        // 1. 데이터 준비
+        char data1[] = "Data 1";
+        char data2[] = "Data 222"; // 길이 다르게
+        char data3[] = "Data 33333";
+
+        uint16_t slot1, slot2, slot3;
+
+        // 2. 삽입
+        page.InsertTuple(Tuple(data1, sizeof(data1)), &slot1);
+        page.InsertTuple(Tuple(data2, sizeof(data2)), &slot2);
+        page.InsertTuple(Tuple(data3, sizeof(data3)), &slot3);
+
+        EXPECT_EQ(page.GetHeader()->num_slots_, 3);
+
+        // 3. 조회 테스트
+        Tuple result_tuple;
+
+        // slot 1 조회 -> 성공
+        EXPECT_TRUE(page.GetTuple(slot1, &result_tuple));
+        EXPECT_EQ(result_tuple.GetSize(), sizeof(data1));
+        EXPECT_EQ(std::memcmp(result_tuple.GetData(), data1, sizeof(data1)), 0);
+
+        // 4. 삭제 테스트 (Slot 2 삭제)
+        EXPECT_TRUE(page.MarkDelete(slot2));
+
+        // 5. 삭제한걸 조회 -> 실패
+        EXPECT_FALSE(page.GetTuple(slot2, &result_tuple));
+
+        // slot 1, 3은 정상이어야 함
+        EXPECT_TRUE(page.GetTuple(slot1, &result_tuple));
+        EXPECT_EQ(std::memcmp(result_tuple.GetData(), data1, sizeof(data1)), 0);
+
+        EXPECT_TRUE(page.GetTuple(slot3, &result_tuple));
+        EXPECT_EQ(std::memcmp(result_tuple.GetData(), data3, sizeof(data3)), 0);
+
+        // 6. 삭제된걸 다시 삭제 시도 시, 실패
+        EXPECT_FALSE(page.MarkDelete(slot2));
+    }
 }

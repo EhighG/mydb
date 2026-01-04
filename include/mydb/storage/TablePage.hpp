@@ -71,6 +71,21 @@ namespace mydb {
          */
         bool InsertTuple(const Tuple& tuple, uint16_t* slot_id);
 
+        /**
+         * @brief 튜플 조회
+         * @param slot_id 조회할 슬롯 번호
+         * @param tuple (출력용) 조회된 데이터를 담을 객체 포인터 (out매개변수)
+         * @return 성공여부 (삭제됐거나 인덱스 범위 초과 시 false)
+         */
+        bool GetTuple(uint16_t slot_id, Tuple* tuple);
+
+        /**
+         * @brief 슬롯 삭제 (tombstone 마킹)
+         * @param slot_id 삭제할 슬롯 번호
+         * @return 성공 여부
+         */
+        bool MarkDelete(uint16_t slot_id);
+
     private:
         // 자체 멤버변수 없음. Page의 data_만 해석해서 사용.
     };
