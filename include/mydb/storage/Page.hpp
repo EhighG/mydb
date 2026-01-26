@@ -4,17 +4,9 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include "mydb/common/config.hpp"
 
 namespace mydb {
-
-    // MySQL 호환 페이지 크기: 16KB
-    constexpr size_t PAGE_SIZE = 16384;
-
-    // 페이지 ID 타입 정의: 4바이트 정수(unsigned)
-    using PageId = uint32_t;
-
-    // 유효하지 않은 페이지 ID 상수
-    constexpr PageId INVALID_PAGE_ID = UINT32_MAX;
 
     /**
      * @brief DB의 가장 기본 저장 단위

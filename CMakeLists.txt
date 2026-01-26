@@ -12,7 +12,7 @@ endif()
 project(my_sql VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CSS_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # 컴파일러 경고 강화 (Linux GCC/Clang 전용)
 add_compile_options(-Wall -Wextra -Wpedantic)
@@ -26,11 +26,22 @@ find_package(Boost REQUIRED COMPONENTS system)
 # 헤더 경로 포함
 include_directories(include)
 
+# 실행/테스트에 사용할 소스파일들을 변수로 지정
+set(DB_CORE_SOURCES
+    src/storage/DiskManager.cpp
+    src/storage/TablePage.cpp
+    src/storage/TableHeap.cpp
+    src/buffer/LRUReplacer.cpp
+    src/buffer/BufferPoolManager.cpp
+)
+
 
 # 실행 파일 생성
 
 # 메인 실행 파일
-add_executable(mydb src/main.cpp)
+add_executable(mydb src/main.cpp
+    ${DB_CORE_SOURCES}
+)
 
 # 라이브러리 연결 (Link)
 target_link_libraries(mydb PRIVATE
@@ -47,17 +58,12 @@ find_package(GTest CONFIG REQUIRED)
 
 # 테스트용 실행파일 생성
 add_executable(mydb_test
-    # [Storage]
-    src/storage/DiskManager.cpp
-    src/storage/TablePage.cpp
+    ${DB_CORE_SOURCES}
 
-    # [Buffer]
-    src/buffer/LRUReplacer.cpp
-    src/buffer/BufferPoolManager.cpp
-
-    # [Tests]
+    # 테스트 파일들
     tests/buffer_test.cpp
     tests/table_page_test.cpp
+    tests/table_heap_test.cpp
 )
 
 # GTest 라이브러리 연결
@@ -72,4 +78,4 @@ target_link_libraries(mydb_test PRIVATE
 )
 
 # 'ctest' 명령어로 발견되도록 등록
-add_test(NAME BufferPoolTest COMMAND mydb_test)
+add_test(NAME AllTests COMMAND mydb_test)

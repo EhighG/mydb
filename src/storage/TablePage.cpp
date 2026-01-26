@@ -87,6 +87,4 @@ namespace mydb {
 
         return true;
     }
-
-
 }
