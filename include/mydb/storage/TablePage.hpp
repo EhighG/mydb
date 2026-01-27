@@ -2,6 +2,8 @@
 
 #include <cstring>
 #include <optional>
+
+#include "RID.hpp"
 #include "mydb/storage/Page.hpp"
 #include "mydb/storage/Tuple.hpp"
 
@@ -86,6 +88,25 @@ namespace mydb {
          */
         bool MarkDelete(uint16_t slot_id);
 
+        /**
+         * @brief 특정 슬롯 삭제여부 확인
+         */
+        bool IsDeleted(uint16_t slot_id);
+
+        /**
+         * @brief 페이지 내 첫번째 유효한 튜플의 RID 반환
+         * @param first_rid 결과를 저장할 RID 포인터
+         * @return 성공 여부. 유효한 튜플이 없으면 false
+         */
+        bool GetFirstTupleRid(RID* first_rid);
+
+        /**
+         * @brief 다음 유효한 RID 찾기
+         * @param cur_rid 현재 위치
+         * @param next_rid 결과를 저장할 RID 포인터
+         * @return 성공 여부. 유효한 튜플이 없으면 false
+         */
+        bool GetNextTupleRid(const RID& cur_rid, RID* next_rid);
     private:
         // 자체 멤버변수 없음. Page의 data_만 해석해서 사용.
     };

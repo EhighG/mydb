@@ -74,7 +74,7 @@ namespace mydb {
 
         // 2. 삭제여부 체크
         Slot& slot = GetSlotArray()[slot_id];
-        if (slot.length_ == 0) {
+        if (IsDeleted(slot_id)) {
             return false;
         }
 
@@ -86,5 +86,46 @@ namespace mydb {
         // (B+Tree 인덱스 참조 유지 + 성능 이유라는데, 뭘지?)
 
         return true;
+    }
+
+    bool TablePage::IsDeleted(uint16_t slot_id) {
+        // slot_id가 범위를 벗어났으면, 삭제된 것으로 취급
+        if (slot_id >= GetHeader()->num_slots_) {
+            return true;
+        }
+
+        // 2. 슬롯 배열의 시작 위치 계산
+        // 헤더(TablePageHeader) 바로 뒤부터 슬롯 배열 시작
+        auto* slots = reinterpret_cast<Slot*>(get_data() + sizeof(SlottedPageHeader));
+
+        // 3. 해당 슬롯 정보 가져오기
+        Slot& slot = slots[slot_id];
+
+        // 4. 삭제여부 판단
+        return slot.length_ == 0 && slot.offset_ == 0;
+    }
+
+
+    bool TablePage::GetFirstTupleRid(RID* first_rid) {
+        // 슬롯 0부터 끝까지 순회
+        for (uint16_t i = 0; i < GetHeader()->num_slots_; ++i) {
+            if (!IsDeleted(i)) {
+                first_rid->Set(get_page_id(), i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool TablePage::GetNextTupleRid(const RID& cur_rid, RID* next_rid) {
+        auto* header = GetHeader();
+
+        for (uint16_t i = cur_rid.GetSlotId() + 1; i < GetHeader()->num_slots_; ++i) {
+            if (!IsDeleted(i)) {
+                next_rid->Set(get_page_id(), i);
+                return true;
+            }
+        }
+        return false;
     }
 }

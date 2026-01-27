@@ -67,5 +67,7 @@ namespace mydb {
     private:
         BufferPoolManager* bpm_;
         PageId first_page_id_;
+
+        friend class TableIterator;
     };
 }
